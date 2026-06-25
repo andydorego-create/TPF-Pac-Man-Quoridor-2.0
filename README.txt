@@ -6,6 +6,9 @@ Implementación en C + raylib del TP "Quoridor Pac-Man"
 1) CÓMO COMPILAR
 ------------------------------------------------------------
 
+Una vez descargados todos los archivos se debe crear una carpeta con el nombre "maps"
+que contenga los cuatro archivos de texto de mapas(mapa1_clasico, mapa2_chico, mapa3_grande y personalizado)
+
 Hace falta tener raylib instalado (https://www.raylib.com).
 
 En Linux, si raylib ya está instalado en el sistema:
