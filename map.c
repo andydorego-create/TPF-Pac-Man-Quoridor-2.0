@@ -45,24 +45,28 @@ bool Map_Cargar(const char *path, MapData *map) {
     FILE *f = fopen(path, "r");
     if (!f) return false;
 
-    if (fscanf(f, "%d %d", &map->rows, &map->cols) != 2) { fclose(f); return false; }
+    int rows, cols;
+    if (fscanf(f, "%d %d", &rows, &cols) != 2) { fclose(f); return false; }
+    if (rows < 1 || rows > MAX_SIZE || cols < 1 || cols > MAX_SIZE) { fclose(f); return false; }
 
-    Map_Vacio(map, map->rows, map->cols); /* limpia matrices de muros */
+    Map_Vacio(map, rows, cols); /* limpia matrices de muros */
 
-    fscanf(f, "%d %d", &map->pacmanStart.row, &map->pacmanStart.col);
+    if (fscanf(f, "%d %d", &map->pacmanStart.row, &map->pacmanStart.col) != 2) { fclose(f); return false; }
     for (int i = 0; i < NUM_GHOSTS; i++)
-        fscanf(f, "%d %d", &map->ghostStart[i].row, &map->ghostStart[i].col);
+        if (fscanf(f, "%d %d", &map->ghostStart[i].row, &map->ghostStart[i].col) != 2) { fclose(f); return false; }
     for (int i = 0; i < NUM_BALLS; i++)
-        fscanf(f, "%d %d", &map->ballStart[i].row, &map->ballStart[i].col);
+        if (fscanf(f, "%d %d", &map->ballStart[i].row, &map->ballStart[i].col) != 2) { fclose(f); return false; }
 
     int numWalls = 0;
-    fscanf(f, "%d", &numWalls);
+    if (fscanf(f, "%d", &numWalls) != 1) { fclose(f); return false; }
     for (int i = 0; i < numWalls; i++) {
         char tipo;
         int r, c;
-        fscanf(f, " %c %d %d", &tipo, &r, &c);
-        if (tipo == 'H' || tipo == 'h') map->wallH[r][c] = WALL_PERM;
-        else                            map->wallV[r][c] = WALL_PERM;
+        if (fscanf(f, " %c %d %d", &tipo, &r, &c) != 3) break; /* línea corrupta: dejamos de leer muros */
+        if (r < 0 || r >= MAX_SIZE || c < 0 || c >= MAX_SIZE) continue; /* índice inválido: se ignora */
+        if (tipo == 'H' || tipo == 'h')      map->wallH[r][c] = WALL_PERM;
+        else if (tipo == 'V' || tipo == 'v') map->wallV[r][c] = WALL_PERM;
+        /* cualquier otro carácter de tipo: se ignora esa línea */
     }
 
     fclose(f);
