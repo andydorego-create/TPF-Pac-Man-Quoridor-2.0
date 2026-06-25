@@ -30,6 +30,21 @@ static void ToggleMuro(MapData *m, Cell cur, int dr, int dc) {
     }
 }
 
+/* Si el tablero se achica, reubica dentro de los nuevos límites cualquier
+   elemento (Pac-Man, fantasma o pac-bola) que haya quedado afuera. */
+static void ClampPosiciones(MapData *m) {
+    if (m->pacmanStart.row >= m->rows) m->pacmanStart.row = m->rows - 1;
+    if (m->pacmanStart.col >= m->cols) m->pacmanStart.col = m->cols - 1;
+    for (int i = 0; i < NUM_GHOSTS; i++) {
+        if (m->ghostStart[i].row >= m->rows) m->ghostStart[i].row = m->rows - 1;
+        if (m->ghostStart[i].col >= m->cols) m->ghostStart[i].col = m->cols - 1;
+    }
+    for (int i = 0; i < NUM_BALLS; i++) {
+        if (m->ballStart[i].row >= m->rows) m->ballStart[i].row = m->rows - 1;
+        if (m->ballStart[i].col >= m->cols) m->ballStart[i].col = m->cols - 1;
+    }
+}
+
 void Editor_Update(Game *g) {
     MapData *m = &g->editorMap;
 
@@ -48,10 +63,13 @@ void Editor_Update(Game *g) {
     }
 
     /* cambiar tamaño del tablero */
-    if (IsKeyPressed(KEY_A) && m->rows < MAX_SIZE) m->rows++;
-    if (IsKeyPressed(KEY_Z) && m->rows > 5) m->rows--;
-    if (IsKeyPressed(KEY_S) && m->cols < MAX_SIZE) m->cols++;
-    if (IsKeyPressed(KEY_X) && m->cols > 5) m->cols--;
+    bool tamanioCambio = false;
+    if (IsKeyPressed(KEY_A) && m->rows < MAX_SIZE) { m->rows++; tamanioCambio = true; }
+    if (IsKeyPressed(KEY_Z) && m->rows > 5)        { m->rows--; tamanioCambio = true; }
+    if (IsKeyPressed(KEY_S) && m->cols < MAX_SIZE) { m->cols++; tamanioCambio = true; }
+    if (IsKeyPressed(KEY_X) && m->cols > 5)        { m->cols--; tamanioCambio = true; }
+    if (tamanioCambio) ClampPosiciones(m);
+
     if (g->editorCursor.row >= m->rows) g->editorCursor.row = m->rows - 1;
     if (g->editorCursor.col >= m->cols) g->editorCursor.col = m->cols - 1;
 
